@@ -1,1 +1,63 @@
+#include<iostream>
+#include<math.h>
 
+using namespace std;
+
+class quard
+{
+	public:
+		int a,b,c,discriminant;
+		float x1,x2;
+		void input()
+		{
+			cout<<"Enter a quadratic equation\n";
+			cout<<"Enter a coeffient of x^2: ";
+			cin>>a;
+			cout<<"Enter a coeffient of x: ";
+			cin>>b;
+			cout<<"Enter a constant: ";
+			cin>>c;
+		}
+
+		void root()
+		{
+			x1=(-b+sqrt(b*b - 4*a*c))/(2*a);
+			x2=(-b-sqrt(b*b - 4*a*c))/(2*a);
+			discriminant=b*b - 4*a*c;
+		}
+
+		void display()
+		{
+			if(x1==x2)
+            {
+				cout<<"Roots are Real and Equal\n";
+				cout<<"First root is "<<x1<<endl;
+				cout<<"Second root is "<<x2<<endl;
+            }
+
+			else if(discriminant>=0)
+			{
+				cout<<"Roots are Real\n";
+				cout<<"First root is "<<x1<<endl;
+				cout<<"Second root is "<<x2<<endl;
+			}
+
+			else
+			{
+				x1=(-b+sqrt(-(b*b - 4*a*c)))/(2*a);
+				x2=(-b-sqrt(-(b*b - 4*a*c)))/(2*a);
+				cout<<"Roots are Imaginary\n";
+				cout<<"First root is "<<x1<<"i"<<endl;
+				cout<<"Second root is "<<x2<<"i"<<endl;
+			}
+
+		}
+};
+
+int main()
+{
+	quard qrd;
+	qrd.input();
+	qrd.root();
+	qrd.display();
+}
