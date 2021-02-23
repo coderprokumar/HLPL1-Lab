@@ -44,11 +44,7 @@ class quard
 
 			else
 			{
-				x1=(-b+sqrt(-(b*b - 4*a*c)))/(2*a);
-				x2=(-b-sqrt(-(b*b - 4*a*c)))/(2*a);
 				cout<<"Roots are Imaginary\n";
-				cout<<"First root is "<<x1<<"i"<<endl;
-				cout<<"Second root is "<<x2<<"i"<<endl;
 			}
 
 		}
