@@ -1,59 +1,50 @@
-#include<iostream>
-#include<math.h>
+#include "std_lib_facilities.h"
 
-using namespace std;
+class Bad_Inputs {};
+class Unreal_Roots{};
 
-class quard
-{
-	public:
-		int a,b,c,discriminant;
-		float x1,x2;
-		void input()
-		{
-			cout<<"Enter a quadratic equation\n";
-			cout<<"Enter a coeffient of x^2: ";
-			cin>>a;
-			cout<<"Enter a coeffient of x: ";
-			cin>>b;
-			cout<<"Enter a constant: ";
-			cin>>c;
-		}
+void RealEqualRoots(double, double, double);
 
-		void root()
-		{
-			x1=(-b+sqrt(b*b - 4*a*c))/(2*a);
-			x2=(-b-sqrt(b*b - 4*a*c))/(2*a);
-			discriminant=b*b - 4*a*c;
-		}
+int main(){
+    double a, b, c;
+    double Discriminant;
 
-		void display()
-		{
-			if(x1==x2)
-            {
-				cout<<"Roots are Real and Equal\n";
-				cout<<"First root is "<<x1<<endl;
-				cout<<"Second root is "<<x2<<endl;
-            }
+    try{
+    cout << "Input the Co-efficient of x^2: ";
+    cin >> a;
+    cout << "Input the Co-efficient of x: ";
+    cin >> b;
+    cout << "Input the Digit: ";
+    cin >> c;
 
-			else if(discriminant>=0)
-			{
-				cout<<"Roots are Real\n";
-				cout<<"First root is "<<x1<<endl;
-				cout<<"Second root is "<<x2<<endl;
-			}
+    if (a==0 ||b==0){throw Bad_Inputs{};}
+    } catch (Bad_Inputs)
+    {cout << "This isn't a Quadratic Equation!" << endl;return 1;}
 
-			else
-			{
-				cout<<"Roots are Imaginary\n";
-			}
+    Discriminant = ((b * b) - (4 * a * c));
 
-		}
-};
+    try{
+        if (Discriminant >= 0){RealEqualRoots(a, b, Discriminant);}
+        else if (Discriminant < 0){throw Unreal_Roots{};}
+    }catch (Unreal_Roots )
+    {cout << "The Roots are Un-Real " << endl;
+    }return 0;
+}
 
-int main()
-{
-	quard qrd;
-	qrd.input();
-	qrd.root();
-	qrd.display();
+void RealEqualRoots(double a, double b, double Disc){
+    double SqrtDisc, Root1, Root2;
+    SqrtDisc = sqrt(Disc);
+    Root1 = ((-b + SqrtDisc) / (2 * a));
+    Root2 = ((-b - SqrtDisc) / (2 * a));
+
+    if (Disc == 0){
+        cout << "The Roots are EQUAL" << endl;
+        cout << "The Root is: " << Root1 << endl;
+    }
+
+    else{
+        cout << "The Roots are REAL" << endl;
+        cout << "Root Number 1 is: " << Root1 << endl;
+        cout << "Root Number 2 is: " << Root2 << endl;
+    }
 }
