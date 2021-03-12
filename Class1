@@ -1,1 +1,29 @@
+#include"std_lib_facillities.h"
+using namespace std;
 
+int main(){
+
+/*Initalisation and Entering some Names already in the Vector*/
+vector <string> Bleeps = {"Dheeraj", "Jafarov", "Haider", "Shilin", "Wang", "Ramesh", "Yusif"};
+vector <string> User_Data;
+string Temp;
+bool Scan = false;
+
+/*Taking Input from the User*/
+cout << "ENTER NAMES OF YOUR FRIENDS" << endl;
+while(cin >> Temp){
+   Scan = false;
+   for (string Value : Bleeps){
+        if (Value == Temp){
+        User_Data.push_back("Bleeps");
+        Scan = true;}
+   }
+   if (Scan == false) {User_Data.push_back(Temp);}
+   }
+
+/*Outputting all the Names stored in the Vector*/
+cout << "The number of Words entered in the Vector are : " << User_Data.size() << endl;
+for (string Value : User_Data){
+    cout << Value << endl;}
+return 0;
+}
