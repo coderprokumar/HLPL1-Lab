@@ -83,8 +83,7 @@ void Combinations(int x, int y){
     cout << x << "C" << y << ": " << Combination << endl;
 }
 
-void PermutationsAndCominations(int x, int y)
-{
+void PermutationsAndCominations(int x, int y){
     Permutation(x, y);
     Combinations(x, y);
 }
