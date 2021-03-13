@@ -8,7 +8,6 @@ class Invalid_Input{};
 int Factorial(int);
 void Permutation(int, int);
 void Combinations(int, int);
-void PermutationsAndCominations(int, int);
 
 int main()
 {
@@ -55,8 +54,7 @@ int main()
 
     if (Choice == 1)      {Permutation(a, b);}
     else if (Choice == 2) {Combinations(a, b);}
-    else                  {PermutationsAndCominations(a, b);}
-
+    else                  {Permutation(a,b); Combinations(a, b);}
     return 0;
 }
 
@@ -76,9 +74,4 @@ void Combinations(int x, int y){
     Permutation = (Factorial(x) / Factorial(x - y));
     Combination = Permutation / Factorial(y); 
     cout << x << "C" << y << ": " << Combination << endl;
-}
-
-void PermutationsAndCominations(int x, int y){
-    Permutation(x, y);
-    Combinations(x, y);
 }
