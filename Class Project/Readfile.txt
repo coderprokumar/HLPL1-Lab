@@ -1,2 +1,0 @@
-For example, bears: 17 elephants 9 end should output 26.
-
