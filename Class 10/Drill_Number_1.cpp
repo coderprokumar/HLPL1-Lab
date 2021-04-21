@@ -4,7 +4,7 @@
 int ga[10] = { 1, 2, 4, 8, 16, 32, 64, 128, 256, 512 };
     
 
-void f( int Argument_Array [ ], int Number_Of_Elements ){
+void f( int* Argument_Array, int Number_Of_Elements ){
 
     // 3. IN f():
     // a. Define A Local Int Array la OF Ten Ints.
@@ -14,12 +14,9 @@ void f( int Argument_Array [ ], int Number_Of_Elements ){
         int la [ 10 ] = { };
 
     // b. Copy THE VALUES FROM ga INTO la.
-       
-        // WE INITALIZED A LOCAL LOOP COUNTER VARIABLE AND COPIED THE VALUES FROM GA INTO LA.
-        int Loop_Counter = 0;
-        
+
         cout << "COPIED THE VALUES FROM GA INTO LA." << endl;
-        for (  Loop_Counter = 0; Loop_Counter < Number_Of_Elements; Loop_Counter++ ){ 
+        for ( int Loop_Counter = 0; Loop_Counter < Number_Of_Elements; Loop_Counter++ ){ 
             la [ Loop_Counter ] = ga [ Loop_Counter ];
         }
 
@@ -27,9 +24,10 @@ void f( int Argument_Array [ ], int Number_Of_Elements ){
 
         // HERE WE WILL PRINT OUT THE ELEMENTS OF la.
         cout << "HERE WE WILL PRINT OUT THE ELEMENTS OF la." << endl << endl;
-        for ( Loop_Counter = 0; Loop_Counter < Number_Of_Elements; Loop_Counter++ ){ 
-            cout << "ARRAY POSITION NUMBER: " << ( Loop_Counter + 1 ) << " HAS ELEMENT: " << la [ Loop_Counter ] << endl;
+        for ( int Loop_Counter = 0; Loop_Counter < Number_Of_Elements; Loop_Counter++ ){ 
+            cout << la [ Loop_Counter ] << "\t";
         }
+        cout << endl << endl;
 
     // d. Define A Pointer p TO Int AND Initialize IT WITH AN Array ALLOCATED ON THE Free Store WITH THE SAME Number OF Elements AS THE ARGUMENT Array.
 
@@ -41,17 +39,18 @@ void f( int Argument_Array [ ], int Number_Of_Elements ){
 
         // WE JUST COPIED THE VALUES FROM THE ARGUMENT ARRAY INTO THE FREE-STORE ARRAY.
         cout << "COPIED THE VALUES FROM THE ARGUMENT ARRAY INTO THE FREE-STORE ARRAY." << endl;
-        for ( Loop_Counter = 0; Loop_Counter < Number_Of_Elements; Loop_Counter++ ) {
-            p [ Loop_Counter ] = Argument_Array [ Loop_Counter ];
+        for ( int* Loop_Counter = p; Loop_Counter < ( p + Number_Of_Elements ); Loop_Counter++ ) {
+           *Loop_Counter = Argument_Array [ Loop_Counter - p ];
         }
 
     // f. Print OUT THE ELEMENTS OF THE Free-Store Array.
 
         // WE WILL PRINT OUT THE ELEMENTS OF THE FREE-STORE ARRAY.
         cout << "PRINTING OUT THE ELEMENTS OF THE FREE-STORE ARRAY." << endl << endl;
-        for ( Loop_Counter = 0; Loop_Counter < Number_Of_Elements; Loop_Counter++ ){
-            cout << "ARRAY POSITION NUMBER: " << ( Loop_Counter + 1 ) << " HAS ELEMENT STORED ON FREE-STORE IS: " << p [ Loop_Counter ] << endl;
+        for ( int* Loop_Counter = p; Loop_Counter < ( p + Number_Of_Elements); Loop_Counter++ ){
+            cout << *Loop_Counter << "\t";
         }
+        cout << endl << endl;
 
     // g. Deallocate THE Free-Store Array.
 
