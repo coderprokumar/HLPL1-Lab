@@ -106,6 +106,10 @@ int main(){
 
 	    int Length_Of_An_Array = 10;
 	    int* Array_Of_Ten_Ints = new int [ Length_Of_An_Array ];
+	   
+	    for ( Loop_Counter_1 = 0; Loop_Counter_1 < Length_Of_An_Array; Loop_Counter_1++ ) {
+                 Array_Of_Ten_Ints [ Loop_Counter_1 ] = 0;
+            }
 
     // DRILL NUMBER 1, TASK NUMBER 2.
     // 2. PRINT THE VALUES OF THE TEN INTS TO COUT.
