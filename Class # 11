@@ -1,0 +1,202 @@
+#include "std_lib_facilities.h"
+
+
+class Classified_Vector {
+	size_t Space;
+    size_t Size_Of_The_Vector;
+
+	double* Element;
+
+public:
+
+    // Destructor
+	~Classified_Vector() { 
+        delete[] Element; 
+    }
+    
+    // All Constructors
+	Classified_Vector() : Size_Of_The_Vector { 0 }, Element { nullptr }, Space { 0 } {
+    };
+
+	explicit Classified_Vector( size_t s );
+
+	Classified_Vector( const Classified_Vector& vec );
+	Classified_Vector( Classified_Vector&& vec );
+
+    // Assignment Copy and Move
+	Classified_Vector& operator=(const Classified_Vector& vec);
+	Classified_Vector& operator=(Classified_Vector&& vec);
+
+
+	double& operator[](int n) { 
+        return Element[n];
+    }
+
+	int Size_Of_Vector() const { 
+        return Size_Of_The_Vector;
+    };
+
+	void Print_The_Elements();
+
+	void Reserve_Space(int newalloc);
+
+	int Capacity_of_The_Vector() const { 
+        return Space;
+    }
+
+	void Resize_The_Vector(int newsize);
+
+	void Push_Back_Elements(double d);
+
+	double at(int n) {
+		if ( n < 0 || n >= Size_Of_The_Vector ) {
+			throw std::out_of_range("It is out of the Range!");
+        }
+		return Element[n];
+	}
+};
+
+
+Classified_Vector& Classified_Vector::operator=( Classified_Vector&& vec ) {
+	delete[] Element;
+	Element = vec.Element;
+	Size_Of_The_Vector = vec.Size_Of_The_Vector;
+	Space = vec.Space;
+	vec.Element = nullptr;
+	vec.Size_Of_The_Vector = 0;
+	return *this;
+}
+
+
+Classified_Vector :: Classified_Vector ( size_t s ) : Size_Of_The_Vector{ s }, Element{ new double [ Size_Of_The_Vector ] }, Space{ s } {
+	for ( int i = 0; i < Size_Of_The_Vector; i++ ) {
+		Element[i] = 0.0;
+    }
+}
+
+
+Classified_Vector :: Classified_Vector ( const Classified_Vector& vec ) : Size_Of_The_Vector { vec.Size_Of_The_Vector }, Element { new double [ vec.Size_Of_The_Vector ] }, Space { vec.Size_Of_The_Vector } {
+	copy ( vec.Element, vec.Element + Size_Of_The_Vector, Element );
+    Size_Of_The_Vector;
+}
+
+
+Classified_Vector& Classified_Vector :: operator= ( const Classified_Vector& vec ) {
+	if ( this == &vec ) {
+		return *this;
+    }
+	if ( vec.Size_Of_The_Vector <= Space ) {
+		for (int i = 0; i < vec.Size_Of_The_Vector; i++){
+			Element[i] = vec.Element[i];
+        }
+		Size_Of_The_Vector = vec.Size_Of_The_Vector;
+		return *this;
+	}
+
+	double* p = new double [ vec.Size_Of_The_Vector ];
+	copy ( vec.Element, vec.Element + vec.Size_Of_The_Vector, p );
+	delete[] Element; 
+	Space = Size_Of_The_Vector = vec.Size_Of_The_Vector;
+	Element = p;
+	return *this;
+}
+
+
+Classified_Vector :: Classified_Vector ( Classified_Vector&& vec ) : Size_Of_The_Vector { vec.Size_Of_The_Vector }, Element{ vec.Element }, Space{ vec.Space } {
+	vec.Size_Of_The_Vector = 0;
+	vec.Element = nullptr;
+}
+
+
+void Classified_Vector :: Reserve_Space( int newalloc) {
+	if ( newalloc <= Space ) { 
+        return;
+    }
+
+	double* p = new double [ newalloc ];
+
+	for ( int i = 0; i < Size_Of_The_Vector; ++i ) { 
+        p[i] = Element [ i ];
+    }
+
+	delete[] Element;
+	Element = p;
+	Space = newalloc;
+}
+
+
+void Classified_Vector :: Resize_The_Vector (int newsize ) {
+	Reserve_Space ( newsize );
+	for (int i = Size_Of_The_Vector; i < newsize; i++ ){
+		Element[ i ] = 0;
+    }
+
+	Size_Of_The_Vector = newsize;
+}
+
+
+void Classified_Vector :: Push_Back_Elements ( double d ) {
+	if ( Space == 0 ) {
+        Reserve_Space(8);
+    }	
+	else if ( Size_Of_The_Vector == Space ) {
+		Reserve_Space(2 * Space);
+    }
+
+	Element[Size_Of_The_Vector] = d;
+	++Size_Of_The_Vector;
+}
+
+
+void Classified_Vector :: Print_The_Elements() {
+
+	for ( int i = 0; i < Size_Of_The_Vector; i++ ) {
+		cout << Element[i] << " ";
+	}
+
+	cout << endl;
+}
+
+
+int main() {
+
+	try {
+		Classified_Vector p(2);
+		p[0] = 1.0;
+		p[1] = 2.0;
+
+		cout << p.at(3) << endl;
+	}
+	catch (out_of_range e) {
+		cout << e.what() << endl;
+	}
+
+
+	Classified_Vector* n_p = new Classified_Vector();
+	cout << n_p->Size_Of_Vector() << endl;
+	cout << n_p->Capacity_of_The_Vector() << endl;
+
+	n_p->Resize_The_Vector(10);
+	cout << n_p->Size_Of_Vector() << endl;
+	cout << n_p->Capacity_of_The_Vector() << endl;
+
+	n_p->Push_Back_Elements(2);
+
+	cout << n_p->Size_Of_Vector() << endl;
+	cout << n_p->Capacity_of_The_Vector() << endl;
+	n_p->Print_The_Elements();
+
+
+
+	Classified_Vector* copy_p(n_p);
+	cout << copy_p->Size_Of_Vector() << endl;
+	cout << copy_p->Capacity_of_The_Vector() << endl;
+	copy_p->Print_The_Elements();
+
+	Classified_Vector* copy_assign = copy_p;
+	cout << copy_assign->Size_Of_Vector() << endl;
+	cout << copy_assign->Capacity_of_The_Vector() << endl;
+	copy_assign->Print_The_Elements();
+
+	return 0;
+}
