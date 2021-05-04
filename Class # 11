@@ -1,202 +1,243 @@
 #include "std_lib_facilities.h"
 
+template < typename T, typename A >
+struct Vector_Base {
+    A Alloc; 				                                                          // ALLOCATER
+    T* Elem; 				                                                          // START OF ALLOCATION
+    int SZ; 				                                                          // NUMBER OF ELEMENTS
+    int Space;                                                                                    // AMOUNT OF ALLOCATED SPACE
 
-class Classified_Vector {
-	size_t Space;
-    size_t Size_Of_The_Vector;
+	Vector_Base( const A& a, int n )
+	    : Alloc { a }, Elem { Alloc.allocate ( n ) }, SZ { n }, Space { n } { }
 
-	double* Element;
+    ~Vector_Base( ) {                                                                             // DESTRUCTOR
+		for ( int i = 0; i < this->SZ; ++i ) {
+			Alloc.destroy ( &Elem [ i ] );
+		}
+		Alloc.deallocate ( Elem, Space );
+	}
+
+	Vector_Base() : Elem{ nullptr }, SZ { 0 }, Space { 0 } {                                 // DEFAULT CONSTRUCTOR
+	};
+};
+
+template < typename T, typename A = allocator < T >>
+class Class_Vector : private Vector_Base < T, A > {
 
 public:
 
-    // Destructor
-	~Classified_Vector() { 
-        delete[] Element; 
-    }
-    
-    // All Constructors
-	Classified_Vector() : Size_Of_The_Vector { 0 }, Element { nullptr }, Space { 0 } {
-    };
+	Class_Vector ( ) : Vector_Base < T, A > ( ) {                                           // DEFAULT CONSTRUCTOR
+	}
 
-	explicit Classified_Vector( size_t s );
+	explicit Class_Vector ( size_t s ) : Vector_Base < T, A > ( this->Alloc, s ) { 	        // NORMAL CONSTRUCTOR
+		for ( T* p = this->Elem; p != this->Elem + s; p++ ) {
+			this->Alloc.construct ( p, T ( ) );
+		}
+	}
 
-	Classified_Vector( const Classified_Vector& vec );
-	Classified_Vector( Classified_Vector&& vec );
+	Class_Vector ( const Class_Vector < T, A >& vec );					 // COPY CONSTRUCTOR
+	Class_Vector < T, A >& operator = (const Class_Vector < T, A >& vec);			 // COPY ASSIGNMENT
 
-    // Assignment Copy and Move
-	Classified_Vector& operator=(const Classified_Vector& vec);
-	Classified_Vector& operator=(Classified_Vector&& vec);
+	Class_Vector( Class_Vector < T, A >&& vec);						 // MOVE CONSTRUCTOR
+	Class_Vector < T, A >& operator = ( Class_Vector < T, A >&& vec);		         // MOVE ASSIGNMENT
 
 
-	double& operator[](int n) { 
-        return Element[n];
-    }
+	T& operator [ ] ( int n ) {	                                                         // FOR NON-CONSTANT VECTORS
+		return this->Elem [ n ];
+	}
 
-	int Size_Of_Vector() const { 
-        return Size_Of_The_Vector;
-    };
+	int Size ( ) const {                                                                     // SIZE VECTOR
+		return this->SZ; 
+	};
 
-	void Print_The_Elements();
+	void Print();                                                                           // PRINT VECTOR
 
-	void Reserve_Space(int newalloc);
+	void Reserve ( int newalloc );                                                         // RESERVE VECTOR
 
-	int Capacity_of_The_Vector() const { 
-        return Space;
-    }
+	int Capacity ( ) const {                                                               // CAPACITY OF VECTOR
+		return this->Space;
+	}
 
-	void Resize_The_Vector(int newsize);
+	void Resize ( int newsize, T val = T ( ) );                                           // RESIZING THE VECTOR
 
-	void Push_Back_Elements(double d);
+	void Push_Back ( T& val );                                                            // PUSH BACK THE VALUE
 
-	double at(int n) {
-		if ( n < 0 || n >= Size_Of_The_Vector ) {
-			throw std::out_of_range("It is out of the Range!");
-        }
-		return Element[n];
+	T& at ( int n ) {
+		if ( n < 0 || this->SZ < n )
+			throw std::out_of_range ( "It is out of the Range!" );
+		return this->Elem [ n ];
 	}
 };
 
 
-Classified_Vector& Classified_Vector::operator=( Classified_Vector&& vec ) {
-	delete[] Element;
-	Element = vec.Element;
-	Size_Of_The_Vector = vec.Size_Of_The_Vector;
-	Space = vec.Space;
-	vec.Element = nullptr;
-	vec.Size_Of_The_Vector = 0;
-	return *this;
-}
-
-
-Classified_Vector :: Classified_Vector ( size_t s ) : Size_Of_The_Vector{ s }, Element{ new double [ Size_Of_The_Vector ] }, Space{ s } {
-	for ( int i = 0; i < Size_Of_The_Vector; i++ ) {
-		Element[i] = 0.0;
-    }
-}
-
-
-Classified_Vector :: Classified_Vector ( const Classified_Vector& vec ) : Size_Of_The_Vector { vec.Size_Of_The_Vector }, Element { new double [ vec.Size_Of_The_Vector ] }, Space { vec.Size_Of_The_Vector } {
-	copy ( vec.Element, vec.Element + Size_Of_The_Vector, Element );
-    Size_Of_The_Vector;
-}
-
-
-Classified_Vector& Classified_Vector :: operator= ( const Classified_Vector& vec ) {
+template < typename T, typename A > Class_Vector < T, A >&Class_Vector < T, A > :: operator = ( const Class_Vector < T, A >& vec ) {
 	if ( this == &vec ) {
 		return *this;
-    }
-	if ( vec.Size_Of_The_Vector <= Space ) {
-		for (int i = 0; i < vec.Size_Of_The_Vector; i++){
-			Element[i] = vec.Element[i];
-        }
-		Size_Of_The_Vector = vec.Size_Of_The_Vector;
+	}
+	if ( vec.SZ <= this->Space ) {					                      //NEVER DECREASE DE-ALLLOCATION
+		copy ( vec.Elem, vec.Elem + vec.SZ, this->Elem );
+	
+		for ( int i = vec.sz; i < this->SZ; ++i ) {
+			this->Alloc.destroy ( &this->Elem [ i ] );
+		}
+
+		this->SZ = vec.SZ;
 		return *this;
 	}
 
-	double* p = new double [ vec.Size_Of_The_Vector ];
-	copy ( vec.Element, vec.Element + vec.Size_Of_The_Vector, p );
-	delete[] Element; 
-	Space = Size_Of_The_Vector = vec.Size_Of_The_Vector;
-	Element = p;
-	return *this;
-}
+	T* p = this->Alloc.allocate ( vec.SZ ); 					       // ALLOCATE NEW SPACE
+	copy ( vec.Elem, vec.Elem + vec.SZ, p ); 				               // COPY ELEMENTS
 
-
-Classified_Vector :: Classified_Vector ( Classified_Vector&& vec ) : Size_Of_The_Vector { vec.Size_Of_The_Vector }, Element{ vec.Element }, Space{ vec.Space } {
-	vec.Size_Of_The_Vector = 0;
-	vec.Element = nullptr;
-}
-
-
-void Classified_Vector :: Reserve_Space( int newalloc) {
-	if ( newalloc <= Space ) { 
-        return;
-    }
-
-	double* p = new double [ newalloc ];
-
-	for ( int i = 0; i < Size_Of_The_Vector; ++i ) { 
-        p[i] = Element [ i ];
-    }
-
-	delete[] Element;
-	Element = p;
-	Space = newalloc;
-}
-
-
-void Classified_Vector :: Resize_The_Vector (int newsize ) {
-	Reserve_Space ( newsize );
-	for (int i = Size_Of_The_Vector; i < newsize; i++ ){
-		Element[ i ] = 0;
-    }
-
-	Size_Of_The_Vector = newsize;
-}
-
-
-void Classified_Vector :: Push_Back_Elements ( double d ) {
-	if ( Space == 0 ) {
-        Reserve_Space(8);
-    }	
-	else if ( Size_Of_The_Vector == Space ) {
-		Reserve_Space(2 * Space);
-    }
-
-	Element[Size_Of_The_Vector] = d;
-	++Size_Of_The_Vector;
-}
-
-
-void Classified_Vector :: Print_The_Elements() {
-
-	for ( int i = 0; i < Size_Of_The_Vector; i++ ) {
-		cout << Element[i] << " ";
+	for ( int i = 0; i < this->SZ; ++i ) {						       // DEALLOCATE OLD SPACE
+		this->Alloc.destroy ( &this->Elem [ i ] );
 	}
 
+	this->Alloc.deallocate ( this->Elem, this->Space );
+	this->Space = this->SZ = vec.SZ;
+	this->Elem = p; 								      // NOW WE CAN RESET Elem
+
+	return *this; 									      // RETURN A SELF-REFERENCE
+}
+
+
+template < typename T, typename A > Class_Vector < T, A >& Class_Vector < T, A > :: operator = ( Class_Vector < T, A >&& vec ) { // MOVE ASSIGNMENT
+
+	for ( int i = 0; i < this->SZ; ++i ) {	                                              // DE-ALLOCATE OLD SPACE
+		this->Alloc.destroy( &this->Elem [ i ] );
+	}
+
+	this->Alloc.deallocate ( this->Elem, this->Space );
+	this->Elem = vec.Elem; 			                                             // COPY a'S Elem AND SZ.
+	this->SZ = vec.SZ;
+	this->Space = vec.Space;
+
+	vec.Elem = nullptr; 		                                                    // MAKE a THE EMPTY VECTOR
+	vec.SZ = 0;
+
+	return *this; 			                                                    // RETURN A SELF-REFERENCE
+
+}
+
+
+template < typename T, typename A > Class_Vector < T, A > :: Class_Vector ( const Class_Vector < T, A >& vec ) : Vector_Base < T, A > { vec.Alloc, vec.size ( ) } {	// COPY CONSTRUCTOR
+	copy ( vec.Elem, vec.Elem + vec->SZ, this->Elem );
+}
+
+
+template < typename T, typename A > Class_Vector < T,A > :: Class_Vector ( Class_Vector < T, A > && vec ) : Vector_Base < T, A > { vec.SZ, vec.Elem, vec.Space } { // MOVE CONSTRUCTOR
+	vec.SZ = 0;
+	vec.Elem = nullptr;
+}
+
+
+template < typename T, typename A > void Class_Vector < T, A > :: Reserve ( int newalloc ) { // RESERVE
+	if ( newalloc <= this->Space ) return; 				                    // NEVER DECREASE ALLOCATION
+
+	T* p = this->Alloc.allocate( newalloc); 				            // ALLOCATE NEW SPACE
+
+	for ( int i = 0; i < this->SZ; ++i ) {
+		this->Alloc.construct(&p [ i ], this->Elem [ i ] );	                   // COPY OLD ELEMENTS
+	}
+
+	for ( int i = 0; i < this->SZ; ++i ) { 					           // DE-ALLOCATE OLD SPACE
+		this->Alloc.destroy( &this->Elem [ i ] );
+	}
+
+	this->Alloc.deallocate( this->Elem, this->Space );
+	this->Elem = p;
+	this->Space = newalloc;
+}
+
+
+template < typename T, typename A > void Class_Vector < T, A > :: Resize (int newsize, T val ) {
+	Reserve( newsize );
+
+	for ( int i = this->SZ; i < newsize; i++ ) {
+		this->Alloc.construct( &this->Elem [ i ], val );
+	}
+
+	for ( int i = newsize; i < this->SZ; i++ ) {
+		this->Alloc.destroy( &this->Elem [ i ] );
+	}
+
+	this->SZ = newsize;
+}
+
+
+template < typename T, typename A > void Class_Vector < T, A > :: Push_Back ( T& val ) { //INCREASE VECTOR SIZE BY ONE; INITALIZE THE NEW ELEMENT WITH D
+	
+	if ( this->Space == 0 ) {
+		Reserve(8); 								     // START WITH SPACE FOR 8 ELEMENTS
+	}
+	else if ( this->SZ == this->Space ){
+		Reserve( 2 * this->Space ); 					            // GET MORE SPACE
+    } 
+
+	this->Alloc.construct( &this->Elem [ this->SZ ], val );
+	++this->SZ; 								            // INCREASE THE SZ (SZ IS THE NUMBER OF ELEMENTS.)
+}
+
+
+template < typename T, typename A > void Class_Vector < T, A >:: Print() {
+	for ( int i = 0; i < this->SZ; i++ ) {
+		cout << this->Elem [ i ] << "  ";
+	}
 	cout << endl;
 }
 
-
-int main() {
-
+int main( ) {
 	try {
-		Classified_Vector p(2);
-		p[0] = 1.0;
-		p[1] = 2.0;
+		Class_Vector < string > p ( 2 );
+		p [ 0 ] = "First";
+		p [ 1 ] = "Second";
 
-		cout << p.at(3) << endl;
+		cout << p.at(3)<< endl;
 	}
-	catch (out_of_range e) {
-		cout << e.what() << endl;
+	catch( out_of_range e ) {
+		cout << e.what ( ) << endl;
 	}
+	
+	Class_Vector < double >* n_p = new Class_Vector < double > ( );
+	cout << "AT INITAL STAGE SIZE IS 0 AND CAPACITY IS 0 TOO." << endl;
+	cout << n_p->Size ( ) << endl;
+	cout << n_p->Capacity ( ) << endl << endl;
+    
+	cout << "AT LATER STAGE WHEN WE HAVE INCREASED THE SIZE TO 10 AND CAPACITY WILL BE 10 TOO." << endl;
+	n_p->Resize ( 10 );
+	cout << n_p->Size ( ) << endl;
+	cout << n_p->Capacity ( ) << endl << endl;
 
+	double x = 2;
+	n_p->Push_Back ( x );
+    
+	cout << "BUT HERE WHEN WE TRIED TO PUSH BACK A NUMBER SIZE INCREASED BY ONE. BUT CAPACITY DOUBLED AS WE HAVE STATED IN PROGRAM" << endl;
+	cout << n_p->Size ( ) << endl;
+	cout << n_p->Capacity ( ) << endl;
 
-	Classified_Vector* n_p = new Classified_Vector();
-	cout << n_p->Size_Of_Vector() << endl;
-	cout << n_p->Capacity_of_The_Vector() << endl;
+	cout << "ELEMENTS IN THE VECTOR: ";
+	n_p->Print ( );
+	cout << endl; 
 
-	n_p->Resize_The_Vector(10);
-	cout << n_p->Size_Of_Vector() << endl;
-	cout << n_p->Capacity_of_The_Vector() << endl;
+	//COPY CHECK
+	Class_Vector <double >* Copy_p (n_p );
+    
+	cout << "CREATING A COPY VECTOR OF FIRST VECTOR." << endl;
+	cout << Copy_p->Size ( ) << endl;
+	cout << Copy_p->Capacity ( ) << endl;
 
-	n_p->Push_Back_Elements(2);
+	cout << "ELEMENTS IN THE COPY VECTOR: ";
+	Copy_p->Print ( );
+        cout << endl; 
 
-	cout << n_p->Size_Of_Vector() << endl;
-	cout << n_p->Capacity_of_The_Vector() << endl;
-	n_p->Print_The_Elements();
+	Class_Vector < double >* Copy_Assign = Copy_p;
 
+	cout << "CREATING A COPY VECTOR OF THE COPY VECTOR." << endl;
+	cout << Copy_Assign->Size ( ) << endl;
+	cout << Copy_Assign->Capacity ( ) << endl;
 
-
-	Classified_Vector* copy_p(n_p);
-	cout << copy_p->Size_Of_Vector() << endl;
-	cout << copy_p->Capacity_of_The_Vector() << endl;
-	copy_p->Print_The_Elements();
-
-	Classified_Vector* copy_assign = copy_p;
-	cout << copy_assign->Size_Of_Vector() << endl;
-	cout << copy_assign->Capacity_of_The_Vector() << endl;
-	copy_assign->Print_The_Elements();
-
+	cout << "ELEMENTS IN THE OTHER COPY VECTOR: ";
+        Copy_Assign->Print ( );
+        cout << endl;
+	
 	return 0;
 }
